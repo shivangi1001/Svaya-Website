@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Svabotix</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#ffffff;
+  --ink:#111111;
+  --muted:#666666;
+  --dim:#999999;
+  --border:#e5e5e5;
+  --surface:#f7f7f7;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;height:60px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:.12em;text-decoration:none;text-transform:uppercase}
+.nav-links{display:flex;gap:36px}
+.nav-links a{font-size:11px;letter-spacing:.07em;color:var(--dim);text-decoration:none;transition:color .15s;font-weight:400}
+.nav-links a:hover{color:var(--ink)}
+@media(max-width:680px){.nav-links{display:none};nav{padding:0 20px}}
+
+/* ── SHARED ── */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .65s,transform .65s}
+.reveal.show{opacity:1;transform:none}
+.wrap{max-width:1100px;margin:0 auto}
+
+/* ════════════════════════════════════════
+   SECTION 1 — IMPACT
+   ════════════════════════════════════════ */
+#impact{
+  padding:120px 48px 100px;
+  border-bottom:1px solid var(--border);
+}
+@media(max-width:680px){#impact{padding:100px 20px 80px}}
+
+.impact-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,3.5vw,3rem);
+  font-weight:500;line-height:1.2;letter-spacing:-.01em;
+  color:var(--ink);max-width:680px;margin-bottom:56px;
+}
+
+.impact-layout{display:grid;grid-template-columns:1fr 300px;gap:56px;align-items:start}
+@media(max-width:860px){.impact-layout{grid-template-columns:1fr;gap:40px}}
+
+/* Chart */
+.chart-box{
+  border:1px solid var(--border);border-radius:3px;
+  padding:28px 24px 20px;background:var(--bg);
+}
+.chart-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+.chart-note{font-size:11px;letter-spacing:.04em;color:var(--dim);font-weight:300}
+.chart-legend{display:flex;gap:20px}
+.cl{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim);font-weight:300}
+.cl-line{height:2px;width:20px;flex-shrink:0;border-radius:1px}
+#waste-svg{width:100%;display:block}
+
+/* Breakdown */
+.breakdown{padding-top:4px;display:flex;flex-direction:column;gap:30px}
+.bk-source-label{
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim);font-weight:400;margin-bottom:2px;
+}
+.bk-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.8rem,4.5vw,3.8rem);font-weight:600;line-height:1;
+  color:var(--ink);margin-bottom:4px;letter-spacing:-.02em;
+}
+.bk-label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;font-weight:400}
+.bk-desc{font-size:12.5px;line-height:1.65;color:var(--muted);font-weight:300}
+.bk-bar{height:1px;background:var(--border);margin-top:12px;position:relative}
+.bk-bar::after{
+  content:'';position:absolute;left:0;top:0;height:1px;
+  background:var(--ink);width:0%;
+  transition:width 1.3s cubic-bezier(.22,1,.36,1);
+}
+.bk-bar[data-w="60"]::after{--tw:60%}
+.bk-bar[data-w="25"]::after{--tw:25%}
+.bk-bar[data-w="15"]::after{--tw:15%}
+.bk-bar.go::after{width:var(--tw)}
+
+.learn-link{
+  display:inline-flex;align-items:center;gap:8px;margin-top:20px;
+  background:none;border:none;padding:0;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:400;
+  letter-spacing:.05em;color:var(--dim);
+  border-bottom:1px solid var(--border);padding-bottom:3px;
+  transition:color .15s,border-color .15s;
+}
+.learn-link:hover{color:var(--ink);border-color:var(--ink)}
+.learn-link svg{flex-shrink:0;transition:transform .15s}
+.learn-link:hover svg{transform:translateX(3px)}
+
+/* ════════════════════════════════════════
+   OVERLAY
+   ════════════════════════════════════════ */
+#detail-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:#fff;overflow-y:auto;
+  opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;
+}
+#detail-overlay.open{opacity:1;visibility:visible}
+
+.ov-close{
+  position:fixed;top:24px;right:32px;z-index:10;
+  background:none;border:1px solid var(--border);border-radius:2px;
+  padding:6px 14px;font-size:11px;letter-spacing:.06em;
+  color:var(--dim);cursor:pointer;transition:color .15s,border-color .15s;
+  font-family:'Inter',sans-serif;font-weight:400;
+}
+.ov-close:hover{color:var(--ink);border-color:var(--ink)}
+
+.ov-body{max-width:680px;margin:0 auto;padding:90px 48px 80px}
+@media(max-width:680px){.ov-body{padding:80px 20px 60px}}
+
+.ov-h{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.8vw,3rem);font-weight:500;
+  line-height:1.15;letter-spacing:-.01em;color:var(--ink);margin-bottom:52px;
+}
+
+.ov-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:52px;padding-bottom:48px;border-bottom:1px solid var(--border)}
+@media(max-width:520px){.ov-stats{grid-template-columns:1fr 1fr}}
+.ov-stat-n{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:600;line-height:1;color:var(--ink);margin-bottom:6px}
+.ov-stat-l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:300}
+
+.ov-block{margin-bottom:36px}
+.ov-bh{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:10px;letter-spacing:-.01em}
+.ov-bp{font-size:14px;line-height:1.86;color:var(--muted);font-weight:300}
+
+.ov-closing{
+  margin-top:48px;padding-top:36px;border-top:1px solid var(--border);
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:17px;line-height:1.72;color:var(--muted);
+}
+.ov-back-btn{
+  display:inline-flex;align-items:center;gap:7px;margin-top:22px;
+  background:none;border:none;border-bottom:1px solid var(--border);padding-bottom:3px;
+  font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.06em;
+  color:var(--dim);cursor:pointer;transition:color .15s,border-color .15s;font-weight:400;
+}
+.ov-back-btn:hover{color:var(--ink);border-color:var(--ink)}
+
+/* ════════════════════════════════════════
+   SECTION 2 — MISSION
+   ════════════════════════════════════════ */
+#mission{padding:100px 48px;border-bottom:1px solid var(--border)}
+@media(max-width:680px){#mission{padding:80px 20px}}
+.mission-inner{max-width:760px}
+
+.mission-lead{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.7rem,3vw,2.4rem);font-weight:500;
+  line-height:1.3;letter-spacing:-.01em;color:var(--ink);margin-bottom:36px;
+}
+
+.mission-body{display:flex;flex-direction:column;gap:18px;margin-bottom:48px}
+.mission-body p{font-size:15px;line-height:1.86;color:var(--muted);max-width:640px;font-weight:300}
+.mission-body p.strong{color:var(--ink);font-weight:400}
+
+.mission-statement{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.55rem,2.8vw,2.2rem);font-weight:500;
+  line-height:1.24;letter-spacing:-.01em;color:var(--ink);
+  padding:32px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  margin-bottom:32px;
+}
+
+.mission-when{
+  font-size:14px;line-height:1.82;color:var(--muted);max-width:580px;
+  padding-left:20px;border-left:2px solid var(--border);font-weight:300;
+}
+
+/* ════════════════════════════════════════
+   SECTION 3 — WHAT WE'RE BUILDING
+   ════════════════════════════════════════ */
+#build{padding:100px 48px;border-bottom:1px solid var(--border)}
+@media(max-width:680px){#build{padding:80px 20px}}
+
+.build-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.7rem,3vw,2.4rem);font-weight:500;
+  line-height:1.2;letter-spacing:-.01em;color:var(--ink);margin-bottom:64px;max-width:480px;
+}
+
+.build-items{display:flex;flex-direction:column}
+.bi{
+  display:grid;grid-template-columns:180px 1fr;gap:40px;
+  padding:36px 0;border-top:1px solid var(--border);align-items:start;
+}
+.bi:last-child{border-bottom:1px solid var(--border)}
+@media(max-width:680px){.bi{grid-template-columns:1fr;gap:12px}}
+.bi-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding-top:5px;font-weight:400}
+.bi-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:500;color:var(--ink);margin-bottom:11px;letter-spacing:-.01em}
+.bi-desc{font-size:13.5px;line-height:1.84;color:var(--muted);font-weight:300}
+
+/* ════════════════════════════════════════
+   SECTION 4 — CONTACT
+   ════════════════════════════════════════ */
+#contact{padding:100px 48px}
+@media(max-width:680px){#contact{padding:80px 20px}}
+.contact-inner{max-width:520px}
+
+.contact-h{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:500;
+  line-height:1.2;letter-spacing:-.01em;color:var(--ink);margin-bottom:10px;
+}
+.contact-sub{font-size:13.5px;line-height:1.78;color:var(--muted);margin-bottom:36px;font-weight:300}
+
+.cf{display:flex;flex-direction:column;gap:10px}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.cf-row{grid-template-columns:1fr}}
+.cf input,.cf select,.cf textarea{
+  width:100%;padding:11px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:2px;
+  color:var(--ink);font-family:'Inter',sans-serif;font-size:13px;outline:none;
+  font-weight:300;transition:border-color .15s,background .15s;-webkit-appearance:none;appearance:none;
+}
+.cf input::placeholder,.cf textarea::placeholder{color:var(--dim)}
+.cf input:focus,.cf select:focus,.cf textarea:focus{
+  border-color:var(--ink);background:var(--bg);
+}
+.cf select{cursor:pointer;color:var(--ink)}
+.cf select option{background:#fff;color:var(--ink)}
+.cf textarea{resize:vertical;min-height:110px;font-family:'Inter',sans-serif}
+.cf-submit{
+  align-self:flex-start;margin-top:6px;
+  padding:10px 26px;background:var(--ink);border:1px solid var(--ink);border-radius:2px;
+  color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:400;
+  letter-spacing:.05em;cursor:pointer;transition:opacity .15s;
+}
+.cf-submit:hover{opacity:.78}
+
+.cf-done{display:none;padding:40px 0}
+.cf-done.vis{display:block}
+.cf-done-h{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.cf-done-p{font-size:13px;color:var(--muted);font-weight:300}
+
+/* ── FOOTER ── */
+footer{
+  padding:24px 48px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+@media(max-width:680px){footer{padding:20px;flex-direction:column;align-items:flex-start;gap:6px}}
+.foot-logo{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--ink);letter-spacing:.12em;text-transform:uppercase}
+.foot-copy{font-size:11px;color:var(--dim);font-weight:300}
+.foot-email{font-size:11px;color:var(--dim);font-weight:300}
+.foot-email a{color:inherit;text-decoration:none;transition:color .15s}
+.foot-email a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Svabotix</a>
+  <div class="nav-links">
+    <a href="#impact">Problem</a>
+    <a href="#mission">Mission</a>
+    <a href="#build">What We're Building</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- ════ SECTION 1: IMPACT ════ -->
+<section id="impact">
+  <div class="wrap">
+    <h1 class="impact-h">This is what increase in textile waste over the past two decades looks like.</h1>
+
+    <div class="impact-layout">
+
+      <!-- Chart -->
+      <div>
+        <div class="chart-box">
+          <div class="chart-meta">
+            <span class="chart-note">million tonnes · population scaled to same 2000 baseline</span>
+            <div class="chart-legend">
+              <div class="cl"><div class="cl-line" style="background:#111"></div>Textile Waste</div>
+              <div class="cl"><div class="cl-line" style="background:#ccc"></div>Population</div>
+            </div>
+          </div>
+          <svg id="waste-svg" viewBox="0 0 540 240" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <button class="learn-link" onclick="openOverlay()">
+          How this affects the environment &amp; what's being done about it
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M8 3l3 3.5L8 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown reveal">
+        <p class="bk-source-label">where this comes from</p>
+        <div>
+          <div class="bk-num">60%</div>
+          <div class="bk-label">Overproduction</div>
+          <div class="bk-desc">Garments manufactured that are never sold or worn even once.</div>
+          <div class="bk-bar" data-w="60"></div>
+        </div>
+        <div>
+          <div class="bk-num">25%</div>
+          <div class="bk-label">Returns &amp; Destruction</div>
+          <div class="bk-desc">Returned and unsold inventory burned or buried rather than resold.</div>
+          <div class="bk-bar" data-w="25"></div>
+        </div>
+        <div>
+          <div class="bk-num">15%</div>
+          <div class="bk-label">Fast Fashion Cycle</div>
+          <div class="bk-desc">Garments worn a handful of times before being discarded.</div>
+          <div class="bk-bar" data-w="15"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════ OVERLAY ════ -->
+<div id="detail-overlay">
+  <button class="ov-close" onclick="closeOverlay()">Close</button>
+  <div class="ov-body">
+
+    <h2 class="ov-h">Where does this waste go, and what is being done about it?</h2>
+
+    <div class="ov-stats">
+      <div>
+        <div class="ov-stat-n">$500B</div>
+        <div class="ov-stat-l">material value destroyed yearly</div>
+      </div>
+      <div>
+        <div class="ov-stat-n">&lt;1%</div>
+        <div class="ov-stat-l">recycled back into fiber</div>
+      </div>
+      <div>
+        <div class="ov-stat-n">$218B</div>
+        <div class="ov-stat-l">in fashion returns annually</div>
+      </div>
+    </div>
+
+    <div class="ov-block">
+      <div class="ov-bh">Most of it ends up in landfills</div>
+      <div class="ov-bp">The majority of discarded textiles go to landfill. Synthetic fibers — polyester, nylon — are plastic. They take 200 to 500 years to break down, leaching microplastics and chemical dyes into soil and groundwater throughout. Natural fibers decompose anaerobically and release methane, a greenhouse gas roughly 80 times more potent than CO₂ over 20 years. Once in landfill, almost nothing comes back out.</div>
+    </div>
+
+    <div class="ov-block">
+      <div class="ov-bh">A lot of it is burned</div>
+      <div class="ov-bp">Incinerating unsold inventory is common practice — used primarily as a brand-protection measure. It releases CO₂, nitrous oxide, and toxic compounds from synthetic dyes. It destroys all material value. $500 billion worth of textiles go this way every year. No second use, no recovery.</div>
+    </div>
+
+    <div class="ov-block">
+      <div class="ov-bh">Thrift and donation absorb a fraction</div>
+      <div class="ov-bp">Much donated clothing cannot be resold — low quality, wrong sizes. It gets bundled and shipped to developing economies, displacing local textile markets, or ends up in landfills there instead. Downcycling — shredding into insulation or rags — is a one-way process. Less than 1% of textiles are recycled back into new clothing fiber.</div>
+    </div>
+
+    <div class="ov-block">
+      <div class="ov-bh">70% of returns are caused by fit, not preference</div>
+      <div class="ov-bp">Of the $218 billion in fashion returns annually, 70% come from fit and sizing problems. 18% of returned goods are written off entirely — too costly to inspect or repackage. This is entirely avoidable waste, caused by the structural mismatch between standardized production and the people it's supposed to serve.</div>
+    </div>
+
+    <div class="ov-block">
+      <div class="ov-bh">What's being done</div>
+      <div class="ov-bp">Extended Producer Responsibility regulations, fiber-to-fiber recycling pilots, resale platforms, rental models — all real, all growing. But they work downstream of overproduction. They manage waste after it exists. None address the production model that keeps generating it. As long as the industry makes more than it sells, in sizes that don't fit most people, the problem compounds.</div>
+    </div>
+
+    <div class="ov-closing">
+      The only durable fix is producing only what is actually demanded. We are building the infrastructure to do that.
+      <br><br>
+      <button class="ov-back-btn" onclick="closeOverlay()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M9.5 6H2.5M5.5 2.5L2 6l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ SECTION 2: MISSION ════ -->
+<section id="mission">
+  <div class="wrap">
+    <div class="mission-inner">
+
+      <div class="mission-lead reveal">
+        Most of the world's produced textiles end up in landfills without ever being used.
+      </div>
+
+      <div class="mission-body">
+        <p class="reveal">We believe this problem doesn't just need another waste management program. It needs to be solved from the core.</p>
+        <p class="reveal">Why was textile waste so much lower two or three decades ago? Because garments were produced only when actually demanded — made to order. No overstock, no fit-driven returns. But that wasn't scalable, so the industry moved to mass production and bulk inventory.</p>
+        <p class="strong reveal">We believe scalability is a solvable problem.</p>
+      </div>
+
+      <div class="mission-statement reveal">
+        We are building machines that enable production of on-demand garments as efficiently as bulk production.
+      </div>
+
+      <div class="mission-when reveal">
+        When landfills stop receiving waste from overproduction and returns — when every garment is produced only because someone asked for it — we will know we have succeeded.
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════ SECTION 3: WHAT WE'RE BUILDING ════ -->
+<section id="build">
+  <div class="wrap">
+    <h2 class="build-h reveal">What we're building.</h2>
+
+    <div class="build-items">
+
+      <div class="bi reveal">
+        <div class="bi-label">Software</div>
+        <div class="bi-right">
+          <div class="bi-title">A dimensionally accurate 3D digital clone of you</div>
+          <div class="bi-desc">Built from a quick body scan, the clone lets you create or choose designs and see how each garment fits on your actual body before anything is made. Every measurement precise. Every design previewed before a stitch is cut.</div>
+        </div>
+      </div>
+
+      <div class="bi reveal" style="transition-delay:.1s">
+        <div class="bi-label">Marketplace</div>
+        <div class="bi-right">
+          <div class="bi-title">A network connecting you with on-demand makers</div>
+          <div class="bi-desc">Boutiques and tailors who already know how to make one garment at a time, with skill. They receive your order with a precision-generated pattern, make it, and deliver it. The infrastructure for custom manufacturing already exists — we make it reachable.</div>
+        </div>
+      </div>
+
+      <div class="bi reveal" style="transition-delay:.2s">
+        <div class="bi-label">Machinery</div>
+        <div class="bi-right">
+          <div class="bi-title">Robotics and automation built for on-demand production</div>
+          <div class="bi-desc">Automation setups that will eventually let us fulfill each garment as efficiently as standardized bulk production does today. This is where on-demand stops being a premium and becomes the default.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════ SECTION 4: CONTACT ════ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-inner">
+      <h2 class="contact-h reveal">Get in touch.</h2>
+      <p class="contact-sub reveal">Investor, engineer, maker, partner, or just curious — we'd like to hear from you.</p>
+
+      <div id="cf-wrap" class="reveal">
+        <form class="cf" onsubmit="sendMsg(event)">
+          <div class="cf-row">
+            <input type="text" placeholder="Your name" id="cf-name" required>
+            <input type="email" placeholder="Email address" id="cf-email" required>
+          </div>
+          <select id="cf-reason">
+            <option value="" disabled selected>What brings you here?</option>
+            <option>Engineer / Technical collaboration</option>
+            <option>Investor / Funding</option>
+            <option>Become a maker or tailor</option>
+            <option>Partnership / Collaboration</option>
+            <option>Early customer access</option>
+            <option>Press / Media</option>
+            <option>Something else</option>
+          </select>
+          <textarea placeholder="Your message" id="cf-msg"></textarea>
+          <button class="cf-submit" type="submit">Send</button>
+        </form>
+      </div>
+
+      <div class="cf-done" id="cf-done">
+        <div class="cf-done-h">Message received.</div>
+        <div class="cf-done-p">We'll get back to you.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="foot-logo">Svabotix</span>
+  <span class="foot-copy">© 2025 Svabotix</span>
+  <div class="foot-email"><a href="mailto:svabotix@gmail.com">svabotix@gmail.com</a></div>
+</footer>
+
+<script>
+'use strict';
+
+/* ════ CHART ════ */
+(function(){
+  const svg=document.getElementById('waste-svg');
+  const W=540,H=240,ML=48,MR=18,MT=14,MB=32;
+  const PW=W-ML-MR, PH=H-MT-MB; // PW=474, PH=194
+
+  // Real data
+  const HY=[2000,2003,2006,2009,2012,2015,2018,2021,2024];
+  const HW=[45,50,56,62,72,82,92,98,102]; // million tonnes of textile waste
+  const HP=[6.1,6.3,6.6,6.8,7.1,7.4,7.6,7.9,8.2]; // world population, billions
+
+  // Normalize population onto the waste (Mt) scale so escalation rates are
+  // directly comparable — both lines start at 45 Mt in 2000.
+  const wBase=HW[0], pBase=HP[0]; // 45 Mt, 6.1 B
+  const HPN=HP.map(v=>wBase*(v/pBase));
+  // 2030 projections
+  const PW_END=134, PP_END=wBase*(8.5/pBase); // ~62.7 Mt normalized
+
+  // X: year-based spacing over 2000–2030
+  const xOf=yr=>ML+((yr-2000)/30)*PW;
+  // Y: waste axis 0–150 Mt
+  const yOf=v=>MT+PH-(v/150)*PH;
+
+  function mkPath(yrs,vals){
+    return yrs.map((yr,i)=>(i?'L':'M')+xOf(yr).toFixed(1)+' '+yOf(vals[i]).toFixed(1)).join(' ');
+  }
+  function arcLen(yrs,vals){
+    let l=0;
+    for(let i=1;i<yrs.length;i++){
+      const dx=xOf(yrs[i])-xOf(yrs[i-1]);
+      const dy=yOf(vals[i])-yOf(vals[i-1]);
+      l+=Math.hypot(dx,dy);
+    }
+    return Math.ceil(l)+4;
+  }
+
+  const wPath=mkPath(HY,HW),     wLen=arcLen(HY,HW);
+  const pPath=mkPath(HY,HPN),    ppLen=arcLen(HY,HPN);
+  const prwPath=mkPath([2024,2030],[102,PW_END]);
+  const prpPath=mkPath([2024,2030],[HPN[8],PP_END]);
+
+  const x24=xOf(2024).toFixed(1), x30=xOf(2030).toFixed(1);
+  const xMid=((xOf(2024)+xOf(2030))/2).toFixed(1);
+
+  let h='';
+
+  // Grid lines + Y axis labels (million tonnes)
+  [0,50,100,150].forEach(v=>{
+    const y=yOf(v).toFixed(1);
+    h+=`<line x1="${ML}" y1="${y}" x2="${W-MR}" y2="${y}" stroke="#f0f0f0" stroke-width="1"/>`;
+    h+=`<text x="${ML-6}" y="${(+y+3.5).toFixed(1)}" text-anchor="end" font-size="9" fill="#bbb" font-family="Inter,sans-serif">${v===0?'0':v+' Mt'}</text>`;
+  });
+
+  // X axis labels
+  [2000,2006,2012,2018,2024,2030].forEach(yr=>{
+    h+=`<text x="${xOf(yr).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="9" fill="#bbb" font-family="Inter,sans-serif">${yr}</text>`;
+  });
+
+  // Dashed separator at 2024
+  h+=`<line x1="${x24}" y1="${MT}" x2="${x24}" y2="${MT+PH}" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="3 3"/>`;
+
+  // "PROJECTED" label (shown after animation)
+  h+=`<text id="proj-lbl" x="${xMid}" y="${(MT+9).toFixed(1)}" text-anchor="middle" font-size="8" letter-spacing="1" fill="#ccc" font-family="Inter,sans-serif" opacity="0">PROJECTED</text>`;
+
+  // Area under waste line
+  const area=wPath+` L${x24} ${yOf(0).toFixed(1)} L${ML} ${yOf(0).toFixed(1)} Z`;
+  h+=`<defs><linearGradient id="wArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#111" stop-opacity=".05"/><stop offset="100%" stop-color="#111" stop-opacity="0"/></linearGradient></defs>`;
+  h+=`<path d="${area}" fill="url(#wArea)"/>`;
+
+  // Historical lines (animated draw-on)
+  h+=`<path id="pop-line" d="${pPath}" fill="none" stroke="#ccc" stroke-width="1.5" stroke-dasharray="${ppLen}" stroke-dashoffset="${ppLen}" stroke-linecap="round"/>`;
+  h+=`<path id="waste-line" d="${wPath}" fill="none" stroke="#111" stroke-width="2.2" stroke-dasharray="${wLen}" stroke-dashoffset="${wLen}" stroke-linecap="round"/>`;
+
+  // Projection lines (appear after historical animation)
+  h+=`<path id="prw-line" d="${prwPath}" fill="none" stroke="#555" stroke-width="1.4" stroke-dasharray="5 4" opacity="0" stroke-linecap="round"/>`;
+  h+=`<path id="prp-line" d="${prpPath}" fill="none" stroke="#ccc" stroke-width="1.2" stroke-dasharray="4 3" opacity="0" stroke-linecap="round"/>`;
+
+  // End dots at 2024
+  h+=`<circle id="w-dot" cx="${x24}" cy="${yOf(102).toFixed(1)}" r="3.5" fill="#111" opacity="0"/>`;
+  h+=`<circle id="p-dot" cx="${x24}" cy="${yOf(HPN[8]).toFixed(1)}" r="3" fill="#ccc" opacity="0"/>`;
+
+  // 2030 projected endpoints + label for waste
+  h+=`<circle id="pw-dot" cx="${x30}" cy="${yOf(PW_END).toFixed(1)}" r="3" fill="#555" opacity="0"/>`;
+  h+=`<text id="pw-lbl" x="${+x30-6}" y="${(yOf(PW_END)-8).toFixed(1)}" text-anchor="end" font-size="9" font-weight="500" fill="#888" font-family="Inter,sans-serif" opacity="0">134 Mt</text>`;
+
+  svg.innerHTML=h;
+
+  const obs=new IntersectionObserver(entries=>{
+    if(!entries[0].isIntersecting) return;
+    obs.disconnect();
+    const DUR=1800, start=performance.now();
+    const ease=t=>1-Math.pow(1-t,3);
+    const wl=document.getElementById('waste-line');
+    const pl=document.getElementById('pop-line');
+    function tick(now){
+      const t=Math.min(1,(now-start)/DUR);
+      const tp=Math.min(1,Math.max(0,(now-start-300)/DUR));
+      wl.setAttribute('stroke-dashoffset',wLen*(1-ease(t)));
+      pl.setAttribute('stroke-dashoffset',ppLen*(1-ease(tp)));
+      if(t<1){requestAnimationFrame(tick);return;}
+      ['w-dot','p-dot'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.setAttribute('opacity','1');
+      });
+      setTimeout(()=>{
+        ['prw-line','prp-line','proj-lbl','pw-dot','pw-lbl'].forEach(id=>{
+          const el=document.getElementById(id);
+          if(el) el.setAttribute('opacity','1');
+        });
+      },450);
+    }
+    requestAnimationFrame(tick);
+  },{threshold:0.25});
+  obs.observe(svg);
+})();
+
+/* ════ OVERLAY ════ */
+window.openOverlay = function(){
+  document.getElementById('detail-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeOverlay = function(){
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.body.style.overflow='';
+};
+document.getElementById('detail-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeOverlay();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeOverlay();
+});
+
+/* ════ FORM ════ */
+window.sendMsg = function(e){
+  e.preventDefault();
+  document.getElementById('cf-wrap').style.display='none';
+  document.getElementById('cf-done').classList.add('vis');
+};
+
+/* ════ REVEAL + BARS ════ */
+let barsGone=false;
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(!entry.isIntersecting) return;
+    entry.target.classList.add('show');
+    if(!barsGone && entry.target.classList.contains('breakdown')){
+      barsGone=true;
+      setTimeout(()=>{
+        document.querySelectorAll('.bk-bar').forEach(el=>el.classList.add('go'));
+      },200);
+    }
+  });
+},{threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+</script>
+</body>
+</html>
